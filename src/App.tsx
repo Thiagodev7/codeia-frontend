@@ -4,6 +4,7 @@ import { PrivateRoute } from './components/layout/PrivateRoute';
 import { LoginPage } from './features/auth/LoginPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { MonitoringPage } from './features/monitor/MonitoringPage';
+import { SettingsPage } from './features/settings/SettingsPage'; // <--- Import
 
 function App() {
   return (
@@ -24,7 +25,13 @@ function App() {
             </PrivateRoute>
           } />
 
-          {/* Rota coringa para redirecionar 404 para home */}
+          {/* NOVA ROTA */}
+          <Route path="/settings" element={
+            <PrivateRoute>
+              <SettingsPage />
+            </PrivateRoute>
+          } />
+
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AuthProvider>
