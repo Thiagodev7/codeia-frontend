@@ -1,11 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-    content: [
-      "./index.html",
-      "./src/**/*.{js,ts,jsx,tsx}",
-    ],
-    theme: {
-      extend: {},
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: 'class', // <--- ADICIONE ESTA LINHA
+  theme: {
+    extend: {
+      colors: {
+        // Vamos adicionar cores semânticas para facilitar a troca
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: "var(--card)",
+        "card-foreground": "var(--card-foreground)",
+        primary: "var(--primary)",
+        "primary-foreground": "var(--primary-foreground)",
+        border: "var(--border)",
+      }
     },
-    plugins: [],
-  }
+  },
+  plugins: [],
+}

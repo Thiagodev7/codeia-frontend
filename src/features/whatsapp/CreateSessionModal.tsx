@@ -20,7 +20,6 @@ export function CreateSessionModal({ isOpen, onClose, onSuccess }: CreateSession
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Busca os agentes disponíveis ao abrir o modal
   useEffect(() => {
     if (isOpen) {
       api.get('/agents').then(res => setAgents(res.data)).catch(console.error);
@@ -53,31 +52,31 @@ export function CreateSessionModal({ isOpen, onClose, onSuccess }: CreateSession
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200">
-        <div className="flex justify-between items-center p-6 border-b border-slate-800">
-          <h2 className="text-xl font-bold text-slate-100">Nova Conexão WhatsApp</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+      {/* Container do Modal */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200 transition-colors">
+        
+        <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-slate-800">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Nova Conexão WhatsApp</h2>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Nome da Sessão */}
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Nome da Sessão</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Nome da Sessão</label>
             <input
               type="text"
               required
               placeholder="Ex: Vendas - Filial 1"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="input-field"
+              className="input-field" // Já estilizado no index.css para temas
             />
           </div>
 
-          {/* Seleção de Agente */}
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Agente Responsável (IA)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Agente Responsável (IA)</label>
             <select
               value={selectedAgent}
               onChange={e => setSelectedAgent(e.target.value)}
@@ -94,7 +93,7 @@ export function CreateSessionModal({ isOpen, onClose, onSuccess }: CreateSession
           </div>
 
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
@@ -103,7 +102,7 @@ export function CreateSessionModal({ isOpen, onClose, onSuccess }: CreateSession
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+              className="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               Cancelar
             </button>
