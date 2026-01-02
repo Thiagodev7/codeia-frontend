@@ -8,10 +8,27 @@ export interface User {
 
 export interface TenantSettings {
   id: string;
+  // Identidade Visual
   primaryColor: string;
   logoUrl: string | null;
+  // Localização e Negócio
+  businessName?: string;
+  description?: string; // Contexto vital para a IA
+  address?: string;
+  contactPhone?: string;
+  website?: string;
+  // Configurações Técnicas
   timezone: string;
-  businessHours: any; // ou Record<string, { start: string; end: string }> | null
+  businessHours: any; // Idealmente: Record<string, { start: string, end: string, open: boolean }>
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  duration: number; // em minutos
+  isActive: boolean;
 }
 
 export interface UserSettings {

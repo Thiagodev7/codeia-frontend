@@ -2,12 +2,12 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   LayoutGrid, 
-  Box, 
+  Store, // Ícone para Meu Negócio
   CalendarClock, 
   MessageCircle, 
   Cpu, 
   MessageSquareCode, 
-  Settings, // Novo ícone
+  Settings, 
   LogOut, 
   X,
   User 
@@ -24,12 +24,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const navItems = [
     { to: "/", icon: LayoutGrid, label: "Dashboard" },
-    { to: "/monitor", icon: MessageCircle, label: "Monitoramento" }, // Subi a prioridade
-    { to: "/services", icon: Box, label: "Serviços" },
+    { to: "/monitor", icon: MessageCircle, label: "Monitoramento" },
+    { to: "/business", icon: Store, label: "Meu Negócio" }, // Substituiu "Serviços"
     { to: "/calendar", icon: CalendarClock, label: "Agenda" },
     { to: "/agents", icon: Cpu, label: "Agentes IA" },
     { to: "/chat", icon: MessageSquareCode, label: "Simulador" },
-    { to: "/settings", icon: Settings, label: "Configurações" }, // Novo item
+    { to: "/settings", icon: Settings, label: "Configurações" },
   ];
 
   return (
@@ -77,7 +77,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium",
                 isActive 
                   ? "bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 shadow-sm border border-cyan-200 dark:border-cyan-500/20" 
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
               )}
             >
               <item.icon className="w-5 h-5" />
@@ -89,8 +89,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Footer com Perfil */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3 px-2 py-2 mb-3">
-            <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-              <User className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+            <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-500 dark:text-slate-400">
+              {user?.name?.charAt(0).toUpperCase() || <User className="w-5 h-5" />}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{user?.name || 'Usuário'}</p>
