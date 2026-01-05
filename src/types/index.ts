@@ -20,6 +20,8 @@ export interface TenantSettings {
   // Configurações Técnicas
   timezone: string;
   businessHours: any; // Idealmente: Record<string, { start: string, end: string, open: boolean }>
+  reminderEnabled: boolean; // ✅ Novo
+  reminderMinutes: number;  // ✅ Novo
 }
 
 export interface Service {
@@ -45,4 +47,22 @@ export interface Customer {
   lastMessage?: string;
   updatedAt?: string;
   _count?: { messages: number };
+}
+
+export interface Appointment {
+  id: string;
+  title: string;
+  description?: string | null;
+  startTime: string; // ISO Date
+  endTime: string;   // ISO Date
+  status: 'SCHEDULED' | 'CANCELED' | 'COMPLETED';
+  customer: {
+    id: string;
+    name: string | null;
+    phone: string;
+  };
+  service?: {
+    name: string;
+    price: number;
+  } | null;
 }
