@@ -2,31 +2,40 @@ import { useState, useEffect } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { api } from '../../lib/api';
 import { 
-  Store, Clock, MapPin, Globe, Save, Plus, Trash2, Edit2, Loader2,
-  BrainCircuit, Scissors, Phone
+  Store, Clock, MapPin, Save, Plus, Trash2, Edit2, Loader2,
+  BrainCircuit, Scissors
 } from 'lucide-react';
-import type { Service, TenantSettings } from '../../types';
+import type { Service } from '../../types';
 
-// ... (DAYS_OF_WEEK e imports mantidos)
-const DAYS_OF_WEEK = [
-  { key: 'mon', label: 'Seg' }, { key: 'tue', label: 'Ter' },
-  { key: 'wed', label: 'Qua' }, { key: 'thu', label: 'Qui' },
-  { key: 'fri', label: 'Sex' }, { key: 'sat', label: 'Sab' },
-  { key: 'sun', label: 'Dom' },
+// Mapeamento para exibir os dias em ordem (1=Seg a 0=Dom)
+const DAYS_CONFIG = [
+  { index: 1, label: 'Segunda-feira' },
+  { index: 2, label: 'Terça-feira' },
+  { index: 3, label: 'Quarta-feira' },
+  { index: 4, label: 'Quinta-feira' },
+  { index: 5, label: 'Sexta-feira' },
+  { index: 6, label: 'Sábado' },
+  { index: 0, label: 'Domingo' },
 ];
+
+interface BusinessHour {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isOpen: boolean;
+}
 
 export function BusinessPage() {
   const [activeTab, setActiveTab] = useState<'info' | 'services'>('info');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [settings, setSettings] = useState<TenantSettings>({
-    id: '', primaryColor: '#06b6d4', logoUrl: '', timezone: 'America/Sao_Paulo',
-    businessHours: {}, businessName: '', description: '', address: '',
-    contactPhone: '', website: ''
-  });
-  
+  // Estados de Dados
+  const [settings, setSettings] = useState<any>({});
+  const [hours, setHours] = useState<BusinessHour[]>([]); // ✅ Nova estrutura de array
   const [services, setServices] = useState<Service[]>([]);
+  
+  // Estados de UI
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Partial<Service>>({});
 
@@ -39,12 +48,19 @@ export function BusinessPage() {
         api.get('/settings/tenant'),
         api.get('/services').catch(() => ({ data: [] }))
       ]);
-      setSettings(prev => ({ 
-        ...prev, 
-        ...settingsRes.data,
-        businessHours: settingsRes.data.businessHours || {} 
-      }));
+
+      setSettings(settingsRes.data);
       setServices(servicesRes.data || []);
+
+      // Lógica de Inicialização dos Horários (Backend -> Frontend)
+      const dbHours: BusinessHour[] = settingsRes.data.businessHours || [];
+      const initializedHours = DAYS_CONFIG.map(d => {
+        const found = dbHours.find(h => h.dayOfWeek === d.index);
+        // Default: 09:00 as 18:00, aberto exceto domingo
+        return found || { dayOfWeek: d.index, startTime: '09:00', endTime: '18:00', isOpen: d.index !== 0 };
+      });
+      setHours(initializedHours);
+
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     } finally {
@@ -52,69 +68,44 @@ export function BusinessPage() {
     }
   }
 
-  // --- Lógica de Horários ---
-  const handleHourChange = (dayKey: string, type: 'start' | 'end', value: string) => {
-    setSettings(prev => ({
-      ...prev,
-      businessHours: {
-        ...prev.businessHours,
-        [dayKey]: {
-          ...(prev.businessHours[dayKey] || { start: '09:00', end: '18:00', open: true }),
-          [type]: value
-        }
-      }
-    }));
+  // --- Manipulação de Horários ---
+  const updateHour = (dayIndex: number, field: keyof BusinessHour, value: any) => {
+    const newHours = [...hours];
+    const targetIndex = newHours.findIndex(h => h.dayOfWeek === dayIndex);
+    if (targetIndex >= 0) {
+      newHours[targetIndex] = { ...newHours[targetIndex], [field]: value };
+      setHours(newHours);
+    }
   };
 
-  const toggleDayOpen = (dayKey: string) => {
-    const current = settings.businessHours[dayKey] || { start: '09:00', end: '18:00', open: true };
-    setSettings(prev => ({
-      ...prev,
-      businessHours: {
-        ...prev.businessHours,
-        [dayKey]: { ...current, open: !current.open }
-      }
-    }));
-  }
-
-  // --- AÇÃO 1: SALVAR TUDO (Settings) ---
+  // --- Salvar Geral ---
   async function handleSaveSettings(e: React.FormEvent) {
     e.preventDefault();
     setIsSaving(true);
     try {
-      // CORREÇÃO CRÍTICA: Criamos um payload limpo
       const payload = {
-        primaryColor: settings.primaryColor,
-        logoUrl: settings.logoUrl || null, // Garante envio de null se vazio
-        timezone: settings.timezone,
-        businessHours: settings.businessHours,
-        businessName: settings.businessName || null,
-        description: settings.description || null,
-        address: settings.address || null,
-        contactPhone: settings.contactPhone || null,
-        website: settings.website || null
+        ...settings,
+        businessHours: hours // ✅ Envia o array estruturado
       };
+      // Limpa campos nulos para evitar erro do Prisma se necessário
+      if (!payload.logoUrl) payload.logoUrl = null;
 
       await api.put('/settings/tenant', payload);
       alert('Informações atualizadas com sucesso!');
     } catch (error) {
-      console.error("Erro ao salvar settings:", error);
-      alert('Erro ao salvar. Verifique se o Backend está rodando e atualizado.');
+      console.error("Erro ao salvar:", error);
+      alert('Erro ao salvar. Verifique o servidor.');
     } finally {
       setIsSaving(false);
     }
   }
 
-  // --- AÇÃO 2: SALVAR SERVIÇO ---
+  // --- Salvar Serviços (Mantido igual) ---
   async function handleSaveService(e: React.FormEvent) {
     e.preventDefault();
-    if (!editingService.name || editingService.price === undefined) {
-        alert('Preencha nome e preço.');
-        return;
-    }
+    if (!editingService.name || editingService.price === undefined) return alert('Preencha nome e preço.');
 
     try {
-      // CORREÇÃO CRÍTICA: Payload estrito para evitar enviar ID ou datas no body
       const payload = {
         name: editingService.name,
         description: editingService.description || null,
@@ -132,7 +123,6 @@ export function BusinessPage() {
       setEditingService({});
       fetchData(); 
     } catch (error) {
-      console.error("Erro ao salvar serviço:", error);
       alert('Erro ao salvar serviço.');
     }
   }
@@ -143,7 +133,6 @@ export function BusinessPage() {
       await api.delete(`/services/${id}`);
       setServices(prev => prev.filter(s => s.id !== id));
     } catch (error) {
-      console.error(error);
       alert('Erro ao excluir.');
     }
   }
@@ -153,17 +142,15 @@ export function BusinessPage() {
   return (
     <MainLayout title="Meu Negócio">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-          <div className="relative z-10 flex items-start gap-5">
+        {/* Banner */}
+        <div className="mb-8 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 text-white shadow-xl">
+          <div className="flex items-start gap-5">
             <div className="p-3 bg-white/10 rounded-xl backdrop-blur-md border border-white/20">
               <BrainCircuit className="w-8 h-8 text-indigo-100" />
             </div>
             <div>
               <h2 className="text-2xl font-bold mb-1">Cérebro da IA</h2>
-              <p className="text-indigo-100 text-sm leading-relaxed max-w-2xl">
-                Configure os dados essenciais para que seu Agente de IA atenda corretamente.
-              </p>
+              <p className="text-indigo-100 text-sm">Configure os dados essenciais para que seu Agente de IA atenda corretamente.</p>
             </div>
           </div>
         </div>
@@ -178,10 +165,11 @@ export function BusinessPage() {
           </button>
         </div>
 
-        {/* Aba Info */}
+        {/* --- ABA INFO (Modificada com a nova lógica de Horários) --- */}
         {activeTab === 'info' && (
           <form onSubmit={handleSaveSettings} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
+              {/* Card de Informações */}
               <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="font-semibold text-slate-800 dark:text-white mb-6 flex items-center gap-2 text-lg border-b border-slate-100 dark:border-slate-800 pb-4">
                   <MapPin className="w-5 h-5 text-indigo-500" /> Localização & Contato
@@ -213,31 +201,52 @@ export function BusinessPage() {
               </div>
             </div>
             
+            {/* Coluna Horários */}
             <div className="lg:col-span-1">
               <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm sticky top-6">
                 <h3 className="font-semibold text-slate-800 dark:text-white mb-6 flex items-center gap-2 text-lg">
                   <Clock className="w-5 h-5 text-emerald-500" /> Horários
                 </h3>
                 <div className="space-y-4">
-                  {DAYS_OF_WEEK.map(day => {
-                     const dayConfig = settings.businessHours?.[day.key] || { start: '09:00', end: '18:00', open: true };
-                     const isOpen = dayConfig.open !== false;
-                     return (
-                      <div key={day.key} className={`flex items-center justify-between text-sm ${isOpen ? '' : 'opacity-50'}`}>
-                        <div className="flex items-center gap-2">
-                          <input type="checkbox" checked={isOpen} onChange={() => toggleDayOpen(day.key)} className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
-                          <span className="w-8 font-medium text-slate-500 uppercase text-xs">{day.label}</span>
+                  {DAYS_CONFIG.map((dayConfig) => {
+                    const currentHour = hours.find(h => h.dayOfWeek === dayConfig.index) || { isOpen: false, startTime: '', endTime: '' };
+                    
+                    return (
+                      <div key={dayConfig.index} className={`flex items-center justify-between text-sm p-2 rounded-lg transition-colors ${currentHour.isOpen ? 'bg-slate-50 dark:bg-slate-800/50' : 'opacity-60'}`}>
+                        {/* Checkbox + Nome do Dia */}
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="checkbox" 
+                            checked={currentHour.isOpen} 
+                            onChange={(e) => updateHour(dayConfig.index, 'isOpen', e.target.checked)} 
+                            className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer" 
+                          />
+                          <span className="font-medium text-slate-600 dark:text-slate-300 w-24 text-xs uppercase">{dayConfig.label}</span>
                         </div>
+
+                        {/* Inputs de Hora */}
                         <div className="flex items-center gap-2">
-                          <input type="time" disabled={!isOpen} value={dayConfig.start} onChange={(e) => handleHourChange(day.key, 'start', e.target.value)} className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs" />
-                          <span className="text-slate-400 text-xs">-</span>
-                          <input type="time" disabled={!isOpen} value={dayConfig.end} onChange={(e) => handleHourChange(day.key, 'end', e.target.value)} className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs" />
+                          <input 
+                            type="time" 
+                            disabled={!currentHour.isOpen} 
+                            value={currentHour.startTime} 
+                            onChange={(e) => updateHour(dayConfig.index, 'startTime', e.target.value)} 
+                            className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs focus:ring-1 focus:ring-emerald-500 outline-none" 
+                          />
+                          <span className="text-slate-400 text-xs text-center w-3">-</span>
+                          <input 
+                            type="time" 
+                            disabled={!currentHour.isOpen} 
+                            value={currentHour.endTime} 
+                            onChange={(e) => updateHour(dayConfig.index, 'endTime', e.target.value)} 
+                            className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs focus:ring-1 focus:ring-emerald-500 outline-none" 
+                          />
                         </div>
                       </div>
                     );
                   })}
                 </div>
-                <button type="submit" disabled={isSaving} className="mt-8 w-full btn-primary flex justify-center items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-medium shadow-lg disabled:opacity-70">
+                <button type="submit" disabled={isSaving} className="mt-8 w-full btn-primary flex justify-center items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-medium shadow-lg disabled:opacity-70 transition-all">
                   {isSaving ? <Loader2 className="animate-spin w-4 h-4"/> : <Save className="w-4 h-4" />} Salvar Tudo
                 </button>
               </div>
@@ -245,12 +254,12 @@ export function BusinessPage() {
           </form>
         )}
 
-        {/* Aba Serviços */}
+        {/* --- ABA SERVIÇOS (Mantida Original) --- */}
         {activeTab === 'services' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white">Catálogo de Serviços</h3>
-              <button onClick={() => { setEditingService({}); setIsServiceModalOpen(true); }} className="btn-primary bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium shadow-md">
+              <button onClick={() => { setEditingService({}); setIsServiceModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium shadow-md transition-colors">
                 <Plus className="w-4 h-4" /> Novo Serviço
               </button>
             </div>
@@ -275,7 +284,7 @@ export function BusinessPage() {
           </div>
         )}
 
-        {/* Modal Serviços */}
+        {/* Modal Serviços (Mantido Original) */}
         {isServiceModalOpen && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg p-8 shadow-2xl">
