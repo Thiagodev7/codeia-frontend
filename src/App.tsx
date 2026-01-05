@@ -5,7 +5,11 @@ import { LoginPage } from './features/auth/LoginPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { MonitoringPage } from './features/monitor/MonitoringPage';
 import { SettingsPage } from './features/settings/SettingsPage';
-import { BusinessPage } from './features/business/BusinessPage'; 
+import { BusinessPage } from './features/business/BusinessPage';
+import AgentsPage from './features/agents/AgentsPage';
+// [1] IMPORTAR O NOVO CHAT
+import ChatPage from './features/chat/ChatPage'; 
+
 function App() {
   return (
     <BrowserRouter>
@@ -32,13 +36,25 @@ function App() {
             </PrivateRoute>
           } />
 
+          <Route path="/agents" element={
+            <PrivateRoute>
+              <AgentsPage />
+            </PrivateRoute>
+          } />
+
+          {/* [2] NOVA ROTA */}
+          <Route path="/chat" element={
+            <PrivateRoute>
+              <ChatPage />
+            </PrivateRoute>
+          } />
+
           <Route path="/settings" element={
             <PrivateRoute>
               <SettingsPage />
             </PrivateRoute>
           } />
 
-          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AuthProvider>
