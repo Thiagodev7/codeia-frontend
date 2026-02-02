@@ -19,9 +19,11 @@ export function useAgents() {
     mutationFn: async (agent: Partial<Agent>) => {
       // Se tiver ID, é update. Senão, create.
       if (agent.id) {
-        await api.put(`/agents/${agent.id}`, agent);
+        const { data } = await api.put(`/agents/${agent.id}`, agent);
+        return data;
       } else {
-        await api.post('/agents', agent);
+        const { data } = await api.post<Agent>('/agents', agent);
+        return data;
       }
     },
     onSuccess: () => {

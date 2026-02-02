@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import { Tooltip } from '../../components/ui/Tooltip';
 import { useAppointments } from '../../hooks/useAppointments'; // Hook
 
 // --- HELPER: Calendário Puro (Sem bibliotecas pesadas) ---
@@ -44,10 +46,14 @@ export function AppointmentsPage() {
   // Estado do Calendário Visual (Navegação Meses)
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  async function handleCancel(id: string) {
-    if (!confirm('Tem certeza que deseja cancelar?')) return;
+  // Estado do Modal de Confirmação
+  const [cancelId, setCancelId] = useState<string | null>(null);
+
+  async function handleConfirmCancel() {
+    if (!cancelId) return;
     try {
-      await cancelAppointment(id);
+      await cancelAppointment(cancelId);
+      setCancelId(null);
     } catch {
       // Erro tratado no hook
     }
@@ -280,13 +286,14 @@ export function AppointmentsPage() {
                     {/* Coluna Ações */}
                     {!isCanceled && (
                       <div className="flex items-center justify-end">
-                        <button 
-                          onClick={() => handleCancel(app.id)}
-                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                          title="Cancelar"
-                        >
-                          <XCircle className="w-5 h-5" />
-                        </button>
+                        <Tooltip content="Cancelar Agendamento">
+                          <button 
+                            onClick={() => setCancelId(app.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          >
+                            <XCircle className="w-5 h-5" />
+                          </button>
+                        </Tooltip>
                       </div>
                     )}
                   </div>
@@ -320,6 +327,18 @@ export function AppointmentsPage() {
         </div>
 
       </div>
+      
+      {/* Modal de Confirmação de Cancelamento */}
+      <ConfirmModal 
+        isOpen={!!cancelId}
+        onClose={() => setCancelId(null)}
+        onConfirm={handleConfirmCancel}
+        title="Cancelar Agendamento"
+        description="Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita e o cliente será notificado."
+        confirmText="Sim, Cancelar"
+        cancelText="Voltar"
+        variant="danger"
+      />
     </MainLayout>
   );
 }

@@ -3,28 +3,58 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-family: "Inter", sans-serif;
+  }
+
   body {
     /* Define as cores base para Claro (slate-50/900) e Escuro (slate-950/50) */
-    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 antialiased transition-colors duration-300;
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 antialiased transition-colors duration-300 overflow-x-hidden;
   }
 }
 
 .input-field {
   /* Input adaptativo: Branco no light mode, Escuro translúcido no dark mode */
-  @apply w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 transition-all;
+  @apply w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 transition-all shadow-sm;
 }
 
 .btn-primary {
-  @apply w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium py-2.5 px-4 rounded-xl hover:shadow-lg hover:shadow-cyan-500/25 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 active:translate-y-0;
 }
 
-/* Utilitário para scrollbar bonita (opcional, mas recomendado) */
-.custom-scrollbar::-webkit-scrollbar {
+/* Glassmorphism Utilities */
+.glass {
+  @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-white/20 dark:border-slate-800/50;
+}
+
+.glass-card {
+  @apply bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20;
+}
+
+/* Utilitário para scrollbar bonita */
+::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-transparent;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors;
+}
+
+/* Animações Globais */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }

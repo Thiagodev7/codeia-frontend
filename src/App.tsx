@@ -14,6 +14,7 @@ import { SettingsPage } from './features/settings/SettingsPage';
 
 // ✅ IMPORTAÇÃO NOVA (A página que criamos)
 import { AppointmentsPage } from './features/appointments/AppointmentsPage';
+import { OnboardingPage } from './features/onboarding/OnboardingPage';
 
 function App() {
   return (
@@ -65,6 +66,13 @@ function App() {
             <Route path="/settings" element={
               <PrivateRoute>
                 <SettingsPage />
+              </PrivateRoute>
+            } />
+
+            {/* ✅ Route Onboarding */}
+            <Route path="/setup" element={
+              <PrivateRoute>
+                <OnboardingPage />
               </PrivateRoute>
             } />
 

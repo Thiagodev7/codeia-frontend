@@ -6,6 +6,7 @@ import {
     Clock,
     MessageSquare,
     ShieldCheck,
+    Sparkles,
     Users,
     type LucideIcon
 } from 'lucide-react';
@@ -109,6 +110,7 @@ export function DashboardPage() {
           icon={Users} 
           color="blue"
           loading={isLoading}
+          to="/monitor"
         />
         <StatCard 
           label="Mensagens Trocadas" 
@@ -116,6 +118,7 @@ export function DashboardPage() {
           icon={MessageSquare} 
           color="purple"
           loading={isLoading}
+          to="/monitor"
         />
         <StatCard 
           label="Agendamentos" 
@@ -123,6 +126,7 @@ export function DashboardPage() {
           icon={CalendarCheck} 
           color="emerald"
           loading={isLoading}
+          to="/calendar"
         />
         <StatCard 
           label="Usuários do Sistema" 
@@ -130,6 +134,7 @@ export function DashboardPage() {
           icon={ShieldCheck} 
           color="amber"
           loading={isLoading}
+          to="/settings"
         />
       </div>
 
@@ -177,8 +182,16 @@ export function DashboardPage() {
                <button className="w-full mt-6 py-2 text-xs text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 font-medium border-t border-slate-100 dark:border-slate-800 transition-colors flex items-center justify-center gap-1">
                  Ver histórico completo <ArrowRight className="w-3 h-3" />
                </button>
-            )}
-          </div>
+             )}
+             
+             {/* Link para o Wizard (Temporário ou Permanente) */}
+             <div className="mt-4 px-6 pb-6">
+                <Link to="/setup" className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl shadow-lg shadow-cyan-900/20 font-bold text-sm hover:scale-105 transition-transform">
+                  <Sparkles className="w-4 h-4" />
+                  Assistente de Configuração
+                </Link>
+             </div>
+           </div>
         </div>
       </div>
     </MainLayout>
@@ -187,15 +200,19 @@ export function DashboardPage() {
 
 // --- SUB-COMPONENTES (Visual & UI) ---
 
+// --- SUB-COMPONENTES (Visual & UI) ---
+import { Link } from 'react-router-dom';
+
 interface StatCardProps {
   label: string;
   value: number | undefined;
   icon: LucideIcon;
   color: 'blue' | 'purple' | 'emerald' | 'amber';
   loading: boolean;
+  to: string; // Adicionado link
 }
 
-function StatCard({ label, value, icon: Icon, color, loading }: StatCardProps) {
+function StatCard({ label, value, icon: Icon, color, loading, to }: StatCardProps) {
   const colors = {
     blue: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10",
     purple: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10",
@@ -216,11 +233,15 @@ function StatCard({ label, value, icon: Icon, color, loading }: StatCardProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl transition-all hover:shadow-lg dark:hover:shadow-cyan-900/5 group relative overflow-hidden">
+    <Link 
+      to={to} 
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl transition-all hover:shadow-lg dark:hover:shadow-cyan-900/5 hover:-translate-y-1 block group relative overflow-hidden"
+    >
       <div className="flex justify-between items-start mb-4 relative z-10">
-        <div className={`p-3 rounded-xl ${colors[color]}`}>
+        <div className={`p-3 rounded-xl transition-colors ${colors[color]} group-hover:scale-110 duration-300`}>
           <Icon className="w-6 h-6" />
         </div>
+        <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 transition-colors" />
       </div>
       
       <div className="relative z-10">
@@ -229,7 +250,7 @@ function StatCard({ label, value, icon: Icon, color, loading }: StatCardProps) {
         </h3>
         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{label}</p>
       </div>
-    </div>
+    </Link>
   );
 }
 
