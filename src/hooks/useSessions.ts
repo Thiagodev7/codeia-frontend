@@ -4,9 +4,11 @@ import { api } from '../lib/api';
 
 export interface WhatsAppSession {
   id: string;
-  name: string;
-  status: 'CONNECTED' | 'DISCONNECTED' | 'QRCODE';
+  sessionName: string;
+  status: 'CONNECTED' | 'DISCONNECTED' | 'QRCODE' | 'STARTING';
   qrCode?: string;
+  phoneNumber?: string;
+  agent?: { name: string };
   battery?: number;
 }
 
@@ -76,6 +78,7 @@ export function useSessions() {
     createSession,
     deleteSession,
     startSession,
-    stopSession
+    stopSession,
+    refetch: query.refetch
   };
 }

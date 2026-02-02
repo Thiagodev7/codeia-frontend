@@ -1,55 +1,50 @@
 import { Loader2, Plus, Smartphone, Trash2, WifiOff } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { api } from '../../lib/api';
+import { useState } from 'react';
+import { useSessions } from '../../hooks/useSessions';
 import { CreateSessionModal } from './CreateSessionModal';
 
-interface Session {
-  id: string;
-  sessionName: string;
-  status: 'CONNECTED' | 'DISCONNECTED' | 'QRCODE' | 'STARTING';
-  qrCode: string | null;
-  phoneNumber: string | null;
-  agent?: { name: string } | null;
-}
+
 
 export function WhatsAppSessionList() {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loadingIds, setLoadingIds] = useState<string[]>([]);
+  const { sessions, startSession, stopSession, deleteSession, refetch } = useSessions();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchSessions = async () => {
-    try {
-      const res = await api.get('/whatsapp/sessions');
-      setSessions(res.data);
-    } catch (error) {
-      console.error("Erro ao buscar sessões", error);
-      toast.error('Erro ao buscar status do WhatsApp');
-    }
-  };
-
-  useEffect(() => {
-    fetchSessions();
-    const interval = setInterval(fetchSessions, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  // Loading states are now handled by mutations status if needed, 
+  // but for simple list UI we can trust optimistic updates or just wait for invalidation.
+  // To keep UI responsive ("Aguarde..."), we can check mutation pending status.
+  // But since we have multiple items, tracking "which ID is loading" is tricky with a single mutation object.
+  // Simplification: We will accept that the button stays enabled for a moment or use a local tracking if critical.
+  // For now, let's use a local state JUST for the UI feedback of "which button is spinning" 
+  // OR we can wrap the mutation call to set a local state.
+  
+  const [loadingIds, setLoadingIds] = useState<string[]>([]);
 
   const handleStart = async (id: string) => {
     setLoadingIds(prev => [...prev, id]);
-    try { await api.post(`/whatsapp/sessions/${id}/start`); fetchSessions(); } catch(e) { toast.error('Erro ao iniciar sessão'); }
-    setLoadingIds(prev => prev.filter(sid => sid !== id));
+    try { 
+        await startSession.mutateAsync(id); 
+    } catch {
+        // toast handled by hook
+    } finally {
+        setLoadingIds(prev => prev.filter(sid => sid !== id));
+    }
   };
 
   const handleStop = async (id: string) => {
     if(!confirm("Desconectar este número?")) return;
     setLoadingIds(prev => [...prev, id]);
-    try { await api.post(`/whatsapp/sessions/${id}/stop`); fetchSessions(); } catch(e) { toast.error('Erro ao parar sessão'); }
-    setLoadingIds(prev => prev.filter(sid => sid !== id));
+    try { 
+        await stopSession.mutateAsync(id); 
+    } catch {
+        // toast handled by hook
+    } finally {
+        setLoadingIds(prev => prev.filter(sid => sid !== id));
+    }
   };
 
   const handleDelete = async (id: string) => {
     if(!confirm("Excluir esta sessão permanentemente?")) return;
-    try { await api.delete(`/whatsapp/sessions/${id}`); fetchSessions(); } catch(e) { toast.error('Erro ao excluir sessão'); }
+    deleteSession.mutate(id);
   };
 
   return (
@@ -163,7 +158,7 @@ export function WhatsAppSessionList() {
       <CreateSessionModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        onSuccess={fetchSessions} 
+        onSuccess={() => refetch()} 
       />
     </div>
   );

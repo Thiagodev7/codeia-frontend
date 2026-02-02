@@ -3,26 +3,10 @@ import { ptBR } from 'date-fns/locale';
 import { Bot, Clock, Loader2, MessageSquare, Phone, Search, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
-import { api } from '../../lib/api';
 // ✅ API v2.0: Importando tipo paginado
-import { toast } from 'sonner';
-import type { PaginatedResponse } from '../../types';
+import { useConversations, useMessages, type Message } from '../../hooks/useMonitoring';
 
-// --- Interfaces ---
-interface Conversation {
-  id: string; 
-  name: string | null;
-  phone: string;
-  lastMessage: string | null;
-  updatedAt: string;
-}
 
-interface Message {
-  id: string;
-  role: 'user' | 'model';
-  content: string;
-  createdAt: string;
-}
 
 // --- Utilitários de Data ---
 function formatDisplayDate(dateString: string) {
@@ -44,58 +28,17 @@ function formatFullDate(dateString: string) {
 const cleanPhone = (phone: string) => phone.replace(/\D/g, '');
 
 export function MonitoringPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  
-  const [isLoadingList, setIsLoadingList] = useState(true);
-  const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // 1. Carregar Conversas e Mensagens via Hook
+  const { data: conversationsData, isLoading: isLoadingList } = useConversations();
+  const { data: messagesData, isLoading: isLoadingChat } = useMessages(selectedCustomerId);
+
+  const conversations = conversationsData || [];
+  const messages = messagesData || [];
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // 1. Carregar Conversas
-  useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        // ✅ API v2.0: Resposta paginada
-        const res = await api.get<PaginatedResponse<Conversation>>('/crm/conversations?limit=100');
-        setConversations(res.data.data); // ✅ Dados agora vêm em res.data.data
-      } catch (error) {
-        console.error("Erro ao carregar conversas:", error);
-        toast.error('Erro ao carregar monitoramento');
-      } finally {
-        setIsLoadingList(false);
-      }
-    };
-
-    fetchConversations();
-    const interval = setInterval(fetchConversations, 5000); 
-    return () => clearInterval(interval);
-  }, []);
-
-  // 2. Carregar Mensagens do Chat Selecionado
-  useEffect(() => {
-    if (!selectedCustomerId) return;
-
-    const fetchMessages = async (showLoading = false) => {
-      if (showLoading) setIsLoadingChat(true);
-      try {
-        // ✅ API v2.0: Resposta paginada
-        const res = await api.get<PaginatedResponse<Message>>(`/crm/conversations/${selectedCustomerId}/messages?limit=100`);
-        setMessages(res.data.data); // ✅ Dados agora vêm em res.data.data
-      } catch (error) {
-        console.error("Erro ao carregar mensagens:", error);
-        toast.error('Erro ao carregar mensagens');
-      } finally {
-        if (showLoading) setIsLoadingChat(false);
-      }
-    };
-
-    fetchMessages(true);
-    const interval = setInterval(() => fetchMessages(false), 3000);
-    return () => clearInterval(interval);
-  }, [selectedCustomerId]);
 
   // Scroll automático
   useEffect(() => {
