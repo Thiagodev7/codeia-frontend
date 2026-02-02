@@ -1,10 +1,37 @@
 import clsx from 'clsx';
 import { type HTMLAttributes, forwardRef } from 'react';
 
+/**
+ * Propriedades do componente Card
+ */
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Se verdadeiro, remove o padding padrão (p-6) do card
+   * @default false
+   */
   noPadding?: boolean;
 }
 
+/**
+ * Container genérico com borda, sombra e padding padrão.
+ * Usado para agrupar conteúdo relacionado na interface.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * // Card padrão com padding
+ * <Card>
+ *   <h3>Título</h3>
+ *   <p>Conteúdo</p>
+ * </Card>
+ *
+ * // Card sem padding para conteúdos full-width (ex: tabelas, imagens)
+ * <Card noPadding>
+ *   <img src="..." />
+ *   <div className="p-4">Legenda</div>
+ * </Card>
+ * ```
+ */
 export const Card = forwardRef<HTMLDivElement, CardProps>(({ 
   className, 
   noPadding = false,

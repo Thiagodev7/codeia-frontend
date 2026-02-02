@@ -2,12 +2,45 @@ import clsx from 'clsx';
 import { Loader2 } from 'lucide-react';
 import { type ButtonHTMLAttributes, forwardRef } from 'react';
 
+/**
+ * Propriedades do componente Button
+ */
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /**
+   * Estilo visual do botão
+   * @default 'primary'
+   */
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
+  
+  /**
+   * Tamanho do botão
+   * @default 'md'
+   */
   size?: 'sm' | 'md' | 'lg' | 'icon';
+  
+  /**
+   * Se verdadeiro, mostra um spinner de carregamento e desabilita o botão
+   * @default false
+   */
   isLoading?: boolean;
 }
 
+/**
+ * Componente de botão interativo com suporte a variantes, tamanhos e estado de carregamento.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * // Botão padrão
+ * <Button onClick={handleClick}>Clique aqui</Button>
+ *
+ * // Botão de perigo carregando
+ * <Button variant="danger" isLoading>Excluindo...</Button>
+ * 
+ * // Botão outline pequeno
+ * <Button variant="outline" size="sm">Cancelar</Button>
+ * ```
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ 
   className, 
   variant = 'primary', 

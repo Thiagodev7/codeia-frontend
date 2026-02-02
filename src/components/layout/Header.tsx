@@ -2,11 +2,29 @@ import { Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../ThemeToggle'; // Certifique-se de ter criado este componente
 
+/**
+ * Propriedades do Header
+ */
 interface HeaderProps {
+  /** Título da página exibido no topo */
   title: string;
+  /** Callback executado ao clicar no botão de menu (mobile) */
   onMenuClick: () => void;
 }
 
+/**
+ * Cabeçalho principal da aplicação.
+ * Contém o título da página, botão de menu mobile, toggle de tema e perfil do usuário.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <Header 
+ *   title="Dashboard" 
+ *   onMenuClick={() => setSidebarOpen(true)} 
+ * />
+ * ```
+ */
 export function Header({ title, onMenuClick }: HeaderProps) {
   const { user } = useAuth();
 

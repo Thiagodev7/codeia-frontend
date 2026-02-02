@@ -2,11 +2,29 @@ import { useState, type ReactNode } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 
+/**
+ * Propriedades do MainLayout
+ */
 interface MainLayoutProps {
+  /** Conteúdo da página */
   children: ReactNode;
+  /** Título exibido no Header */
   title: string;
 }
 
+/**
+ * Layout principal da aplicação autenticada.
+ * Inclui Sidebar, Header e área de conteúdo com scroll.
+ * Gerencia o estado da sidebar no mobile.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <MainLayout title="Configurações">
+ *   <SettingsForm />
+ * </MainLayout>
+ * ```
+ */
 export function MainLayout({ children, title }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
