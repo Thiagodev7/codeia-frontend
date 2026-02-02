@@ -20,7 +20,12 @@ export interface Conversation {
 
 interface PaginatedResponse<T> {
   data: T[];
-  meta: any;
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export function useConversations() {

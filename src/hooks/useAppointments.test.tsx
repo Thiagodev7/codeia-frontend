@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { api } from '../lib/api';
 import { useAppointments } from './useAppointments';
 
@@ -38,7 +38,7 @@ describe('useAppointments', () => {
         meta: { page: 1, total: 1 }
       }
     };
-    (api.get as any).mockResolvedValue(mockData);
+    (api.get as Mock).mockResolvedValue(mockData);
 
     const { result } = renderHook(() => useAppointments(), {
       wrapper: createWrapper()
@@ -53,8 +53,8 @@ describe('useAppointments', () => {
 
   it('handles cancellation successfully', async () => {
     const mockData = { data: { data: [], meta: {} } };
-    (api.get as any).mockResolvedValue(mockData);
-    (api.delete as any).mockResolvedValue({});
+    (api.get as Mock).mockResolvedValue(mockData);
+    (api.delete as Mock).mockResolvedValue({});
 
     const { result } = renderHook(() => useAppointments(), {
       wrapper: createWrapper()
