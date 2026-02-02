@@ -14,6 +14,7 @@ import { SettingsPage } from './features/settings/SettingsPage';
 
 // ✅ IMPORTAÇÃO NOVA (A página que criamos)
 import { AppointmentsPage } from './features/appointments/AppointmentsPage';
+import { ChannelsPage } from './features/channels/ChannelsPage';
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
 
 function App() {
@@ -54,6 +55,13 @@ function App() {
             <Route path="/agents" element={
               <PrivateRoute>
                 <AgentsPage />
+              </PrivateRoute>
+            } />
+
+            {/* ✅ NOVA TELA UNIFICADA */}
+            <Route path="/channels" element={
+              <PrivateRoute>
+                <ChannelsPage />
               </PrivateRoute>
             } />
 

@@ -64,22 +64,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
 
         <div className="w-px h-8 bg-slate-200 dark:bg-slate-800 mx-1 hidden md:block"></div>
 
-        {/* Perfil Simplificado (Já temos na Sidebar, mas no Header é bom também ou redundante? No design moderno, header perfil é comum) */}
-        <div className="flex items-center gap-3">
-            <div className="text-right hidden md:block">
-                <p className="text-sm font-semibold text-slate-800 dark:text-white leading-tight">{user?.name}</p>
-                <div className="flex items-center justify-end gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                    <span className="text-[10px] text-slate-500 font-medium">ONLINE</span>
-                </div>
-            </div>
-            <div className="w-10 h-10 rounded-full p-0.5 bg-gradient-to-tr from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/20">
-                <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
-                     {/* Imagem ou Inicial */}
-                     <span className="font-bold text-cyan-600 dark:text-cyan-400">{user?.name?.charAt(0).toUpperCase()}</span>
-                </div>
-            </div>
-        </div>
+{/* Perfil removido para evitar duplicidade com a Sidebar */}
       </div>
     </header>
   );

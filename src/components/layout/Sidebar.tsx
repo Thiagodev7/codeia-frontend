@@ -1,12 +1,12 @@
 import clsx from 'clsx';
 import {
     CalendarClock,
-    Cpu,
     LayoutGrid,
     LogOut,
     MessageCircle,
     MessageSquareCode,
     Settings,
+    Share2,
     Store,
     User,
     X
@@ -24,10 +24,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const navItems = [
     { to: "/", icon: LayoutGrid, label: "Dashboard" },
+    { to: "/channels", icon: Share2, label: "Meus Canais" }, // Nova tela unificada
     { to: "/monitor", icon: MessageCircle, label: "Monitoramento" },
     { to: "/business", icon: Store, label: "Meu Negócio" },
     { to: "/calendar", icon: CalendarClock, label: "Agenda" },
-    { to: "/agents", icon: Cpu, label: "Agentes IA" },
+    // { to: "/agents", icon: Cpu, label: "Agentes IA" }, // Substituído por Channels
     { to: "/chat", icon: MessageSquareCode, label: "Simulador" },
     { to: "/settings", icon: Settings, label: "Configurações" },
   ];

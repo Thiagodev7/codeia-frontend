@@ -8,7 +8,7 @@ export interface WhatsAppSession {
   status: 'CONNECTED' | 'DISCONNECTED' | 'QRCODE' | 'STARTING';
   qrCode?: string;
   phoneNumber?: string;
-  agent?: { name: string };
+  agent?: { id: string; name: string };
   battery?: number;
 }
 
@@ -72,6 +72,17 @@ export function useSessions() {
       onError: () => toast.error('Erro ao parar sessão')
   });
 
+  const updateSession = useMutation({
+      mutationFn: async ({ id, agentId }: { id: string; agentId: string | null }) => {
+          await api.patch(`/whatsapp/sessions/${id}`, { agentId });
+      },
+      onSuccess: () => {
+          toast.success('Configurações salvas');
+          queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      },
+      onError: () => toast.error('Erro ao atualizar sessão')
+  });
+
   return {
     sessions: query.data || [],
     isLoading: query.isLoading,
@@ -79,6 +90,7 @@ export function useSessions() {
     deleteSession,
     startSession,
     stopSession,
+    updateSession,
     refetch: query.refetch
   };
 }
