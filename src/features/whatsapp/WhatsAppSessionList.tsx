@@ -1,6 +1,7 @@
+import { Loader2, Plus, Smartphone, Trash2, WifiOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { api } from '../../lib/api';
-import { Wifi, WifiOff, Loader2, Smartphone, Trash2, Plus } from 'lucide-react';
 import { CreateSessionModal } from './CreateSessionModal';
 
 interface Session {
@@ -23,6 +24,7 @@ export function WhatsAppSessionList() {
       setSessions(res.data);
     } catch (error) {
       console.error("Erro ao buscar sessões", error);
+      toast.error('Erro ao buscar status do WhatsApp');
     }
   };
 
@@ -34,20 +36,20 @@ export function WhatsAppSessionList() {
 
   const handleStart = async (id: string) => {
     setLoadingIds(prev => [...prev, id]);
-    try { await api.post(`/whatsapp/sessions/${id}/start`); fetchSessions(); } catch(e) {}
+    try { await api.post(`/whatsapp/sessions/${id}/start`); fetchSessions(); } catch(e) { toast.error('Erro ao iniciar sessão'); }
     setLoadingIds(prev => prev.filter(sid => sid !== id));
   };
 
   const handleStop = async (id: string) => {
     if(!confirm("Desconectar este número?")) return;
     setLoadingIds(prev => [...prev, id]);
-    try { await api.post(`/whatsapp/sessions/${id}/stop`); fetchSessions(); } catch(e) {}
+    try { await api.post(`/whatsapp/sessions/${id}/stop`); fetchSessions(); } catch(e) { toast.error('Erro ao parar sessão'); }
     setLoadingIds(prev => prev.filter(sid => sid !== id));
   };
 
   const handleDelete = async (id: string) => {
     if(!confirm("Excluir esta sessão permanentemente?")) return;
-    try { await api.delete(`/whatsapp/sessions/${id}`); fetchSessions(); } catch(e) {}
+    try { await api.delete(`/whatsapp/sessions/${id}`); fetchSessions(); } catch(e) { toast.error('Erro ao excluir sessão'); }
   };
 
   return (

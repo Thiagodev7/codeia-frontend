@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { AlertCircle, ArrowRight, Loader2, Lock, Mail } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { ThemeToggle } from '../../components/ThemeToggle';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
-import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
-import { ThemeToggle } from '../../components/ThemeToggle'; 
 
 export function LoginPage() {
   const { signIn, user } = useAuth();
@@ -30,15 +31,27 @@ export function LoginPage() {
       const { token, user } = response.data;
       signIn(token, user);
       navigate('/'); 
-    } catch (err: any) {
-      const backendError = err.response?.data;
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { code?: string; message?: string } } };
+      const backendError = axiosError.response?.data;
       if (backendError) {
-        if (backendError.code === 'VALIDATION_ERROR') setError(backendError.message || 'Dados inválidos.');
-        else if (backendError.code === 'UNAUTHORIZED') {
+        if (backendError.code === 'VALIDATION_ERROR') {
+          const msg = backendError.message || 'Dados inválidos.';
+          setError(msg);
+          toast.error(msg);
+        } else if (backendError.code === 'UNAUTHORIZED') {
            setError('Credenciais incorretas.');
            setFieldError('password');
-        } else setError(backendError.message || 'Erro no servidor.');
-      } else setError('Sem conexão com o servidor.');
+           toast.error('Email ou senha incorretos');
+        } else {
+          const msg = backendError.message || 'Erro no servidor.';
+          setError(msg);
+          toast.error(msg);
+        }
+      } else {
+        setError('Sem conexão com o servidor.');
+        toast.error('Não foi possível conectar ao servidor');
+      }
     } finally {
       setIsLoading(false);
     }

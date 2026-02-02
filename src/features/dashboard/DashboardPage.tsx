@@ -1,19 +1,21 @@
-import { useEffect, useState } from 'react';
-import { MainLayout } from '../../components/layout/MainLayout';
-import { WhatsAppSessionList } from '../whatsapp/WhatsAppSessionList';
-import { api } from '../../lib/api';
-import { 
-  Users, 
-  MessageSquare, 
-  CalendarCheck, 
-  ShieldCheck, 
-  ArrowRight,
-  Clock
-} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-// CORREÇÃO 1: Adicionado 'type' na importação
-import type { Customer } from '../../types';
+import {
+    ArrowRight,
+    CalendarCheck,
+    Clock,
+    MessageSquare,
+    ShieldCheck,
+    Users,
+    type LucideIcon
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MainLayout } from '../../components/layout/MainLayout';
+import { api } from '../../lib/api';
+import { WhatsAppSessionList } from '../whatsapp/WhatsAppSessionList';
+// Tipos centralizados (API v2.0)
+import { toast } from 'sonner';
+import type { Appointment, Customer, PaginatedResponse } from '../../types';
 
 // --- Interfaces Locais ---
 
@@ -22,14 +24,6 @@ interface DashboardStats {
   customers: number;
   messages: number;
   appointments: number;
-}
-
-interface Appointment {
-  id: string;
-  title: string;
-  startTime: string;
-  status: string;
-  customer: { name: string | null; phone: string };
 }
 
 // Tipo unificado para o Feed
@@ -53,32 +47,34 @@ export function DashboardPage() {
         // 1. Buscamos todas as informações em paralelo para ser rápido
         const [statsRes, conversationsRes, appointmentsRes] = await Promise.all([
           api.get('/tenant/me'),
-          api.get('/crm/conversations'),
-          api.get('/appointments') 
+          api.get<PaginatedResponse<Customer>>('/crm/conversations'),
+          api.get<PaginatedResponse<Appointment>>('/appointments') 
         ]);
 
         // 2. Setamos os contadores
         setStats(statsRes.data._count);
 
         // 3. Processamos o Feed de Atividade
-        // Conversas recentes
-        const recentConversations = (conversationsRes.data || [])
+        // ✅ API v2.0: dados agora vêm em response.data.data
+        const conversations = conversationsRes.data.data || [];
+        const recentConversations = conversations
           .slice(0, 5)
-          .map((c: Customer) => ({
+          .map((c) => ({
             id: c.id,
-            type: 'conversation',
+            type: 'conversation' as const,
             title: c.name || c.phone,
             description: c.lastMessage || 'Iniciou uma conversa',
             timestamp: c.updatedAt || new Date().toISOString(),
             color: 'bg-blue-500'
           }));
 
-        // Agendamentos recentes
-        const recentAppointments = (appointmentsRes.data || [])
+        // ✅ API v2.0: dados agora vêm em response.data.data
+        const appointments = appointmentsRes.data.data || [];
+        const recentAppointments = appointments
           .slice(0, 5)
-          .map((a: Appointment) => ({
+          .map((a) => ({
             id: a.id,
-            type: 'appointment',
+            type: 'appointment' as const,
             title: 'Agendamento: ' + a.title,
             description: `Cliente: ${a.customer?.name || 'Desconhecido'}`,
             timestamp: a.startTime,
@@ -94,6 +90,7 @@ export function DashboardPage() {
 
       } catch (error) {
         console.error("Erro ao carregar dashboard:", error);
+        toast.error('Erro ao carregar dados do dashboard');
       } finally {
         setIsLoading(false);
       }
@@ -193,7 +190,7 @@ export function DashboardPage() {
 interface StatCardProps {
   label: string;
   value: number | undefined;
-  icon: any;
+  icon: LucideIcon;
   color: 'blue' | 'purple' | 'emerald' | 'amber';
   loading: boolean;
 }

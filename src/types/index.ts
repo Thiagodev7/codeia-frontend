@@ -19,7 +19,7 @@ export interface TenantSettings {
   website?: string;
   // Configurações Técnicas
   timezone: string;
-  businessHours: any; // Idealmente: Record<string, { start: string, end: string, open: boolean }>
+  businessHours: BusinessHour[]; // ✅ Tipado corretamente
   reminderEnabled: boolean; // ✅ Novo
   reminderMinutes: number;  // ✅ Novo
 }
@@ -65,4 +65,38 @@ export interface Appointment {
     name: string;
     price: number;
   } | null;
+}
+
+// ============================================
+// API Response Types (v2.0)
+// ============================================
+
+/** Metadados de paginação retornados pela API */
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+/** Resposta paginada genérica da API */
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
+/** Horário de funcionamento por dia da semana */
+export interface BusinessHour {
+  dayOfWeek: number; // 0-6 (Dom-Sab)
+  startTime: string; // "09:00"
+  endTime: string;   // "18:00"
+  isOpen: boolean;
+}
+
+/** Resposta de erro da API */
+export interface ApiError {
+  statusCode: number;
+  code: 'VALIDATION_ERROR' | 'UNAUTHORIZED' | 'RESOURCE_NOT_FOUND' | 'CONFLICT' | 'INTERNAL_ERROR';
+  message: string;
+  details?: Record<string, unknown>;
 }

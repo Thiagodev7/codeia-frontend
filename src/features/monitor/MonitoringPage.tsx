@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
-import { MainLayout } from '../../components/layout/MainLayout';
-import { api } from '../../lib/api';
-import { User, Bot, Search, MessageSquare, Clock, Loader2, Calendar, Phone } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Bot, Clock, Loader2, MessageSquare, Phone, Search, User } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { MainLayout } from '../../components/layout/MainLayout';
+import { api } from '../../lib/api';
+// ✅ API v2.0: Importando tipo paginado
+import { toast } from 'sonner';
+import type { PaginatedResponse } from '../../types';
 
 // --- Interfaces ---
 interface Conversation {
@@ -55,10 +58,12 @@ export function MonitoringPage() {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const res = await api.get('/crm/conversations');
-        setConversations(res.data);
+        // ✅ API v2.0: Resposta paginada
+        const res = await api.get<PaginatedResponse<Conversation>>('/crm/conversations?limit=100');
+        setConversations(res.data.data); // ✅ Dados agora vêm em res.data.data
       } catch (error) {
         console.error("Erro ao carregar conversas:", error);
+        toast.error('Erro ao carregar monitoramento');
       } finally {
         setIsLoadingList(false);
       }
@@ -76,10 +81,12 @@ export function MonitoringPage() {
     const fetchMessages = async (showLoading = false) => {
       if (showLoading) setIsLoadingChat(true);
       try {
-        const res = await api.get(`/crm/conversations/${selectedCustomerId}/messages`);
-        setMessages(res.data);
+        // ✅ API v2.0: Resposta paginada
+        const res = await api.get<PaginatedResponse<Message>>(`/crm/conversations/${selectedCustomerId}/messages?limit=100`);
+        setMessages(res.data.data); // ✅ Dados agora vêm em res.data.data
       } catch (error) {
         console.error("Erro ao carregar mensagens:", error);
+        toast.error('Erro ao carregar mensagens');
       } finally {
         if (showLoading) setIsLoadingChat(false);
       }

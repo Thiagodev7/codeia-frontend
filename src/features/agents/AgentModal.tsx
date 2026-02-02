@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { X, Save, Loader2, Bot } from 'lucide-react';
+import { Bot, Loader2, Save, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 // CORREÇÃO: Usando 'import type' aqui também
+import { toast } from 'sonner';
 import type { Agent, CreateAgentDTO } from '../../types/agent';
 
 interface AgentModalProps {
@@ -58,8 +59,11 @@ export function AgentModal({ isOpen, onClose, onSave, initialData }: AgentModalP
     try {
       await onSave(formData);
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao salvar agente. Verifique os dados.');
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } };
+      const msg = axiosError.response?.data?.message || 'Erro ao salvar agente. Verifique os dados.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

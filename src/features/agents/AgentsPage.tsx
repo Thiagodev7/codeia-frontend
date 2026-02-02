@@ -1,9 +1,10 @@
+import { Bot, Edit2, Loader2, Pause, Play, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Plus, Bot, Trash2, Edit2, Play, Pause, Loader2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import type { Agent, CreateAgentDTO } from '../../types/agent';
 import { AgentModal } from './AgentModal';
 // [1] Importar o Layout Principal
+import { toast } from 'sonner';
 import { MainLayout } from '../../components/layout/MainLayout';
 
 export default function AgentsPage() {
@@ -20,6 +21,7 @@ export default function AgentsPage() {
       setAgents(data);
     } catch (error) {
       console.error("Erro ao buscar agentes", error);
+      toast.error('Erro ao buscar lista de agentes');
     } finally {
       setIsLoading(false);
     }
@@ -39,6 +41,8 @@ export default function AgentsPage() {
       await fetchAgents();
     } catch (error) {
       console.error("Erro ao salvar agente", error);
+      // O erro já é tratado no modal, mas garantimos aqui também
+      toast.error('Erro ao salvar agente');
       throw error; 
     }
   };
@@ -48,8 +52,9 @@ export default function AgentsPage() {
     try {
       await api.delete(`/agents/${id}`);
       setAgents(prev => prev.filter(a => a.id !== id));
-    } catch (e) {
-      alert("Erro ao excluir agente.");
+    } catch (error) {
+      console.error("Erro ao deletar agente", error);
+      toast.error('Erro ao remover agente');
     }
   };
 
@@ -60,8 +65,9 @@ export default function AgentsPage() {
       ));
       
       await api.put(`/agents/${agent.id}`, { isActive: !agent.isActive });
-    } catch (e) {
-      console.error("Erro ao alterar status", e);
+    } catch (error) {
+      console.error("Erro ao alternar status do agente", error);
+      toast.error('Erro ao atualizar status do agente');
       fetchAgents();
     }
   };

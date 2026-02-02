@@ -1,13 +1,21 @@
-import { useState, useEffect, useMemo } from 'react';
+import {
+    Bot,
+    CalendarDays,
+    Calendar as CalendarIcon,
+    ChevronLeft, ChevronRight,
+    Clock,
+    History, ListFilter,
+    Phone,
+    User,
+    XCircle
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { api } from '../../lib/api';
-import { 
-  Calendar as CalendarIcon, Clock, User, Phone, Bot, 
-  XCircle, ChevronLeft, ChevronRight, Filter, Search,
-  CalendarDays, History, ListFilter
-} from 'lucide-react';
-import type { Appointment } from '../../types';
+// ✅ API v2.0: Importando tipo paginado
 import clsx from 'clsx';
+import { toast } from 'sonner';
+import type { Appointment, PaginatedResponse } from '../../types';
 
 // --- HELPER: Calendário Puro (Sem bibliotecas pesadas) ---
 function getCalendarDays(year: number, month: number) {
@@ -44,10 +52,12 @@ export function AppointmentsPage() {
 
   async function fetchAppointments() {
     try {
-      const res = await api.get('/appointments');
-      setAppointments(res.data);
+      // ✅ API v2.0: Resposta paginada
+      const res = await api.get<PaginatedResponse<Appointment>>('/appointments?limit=100');
+      setAppointments(res.data.data); // ✅ Dados agora vêm em res.data.data
     } catch (error) {
       console.error("Erro ao buscar agenda:", error);
+      toast.error('Erro ao carregar agendamentos');
     } finally {
       setIsLoading(false);
     }
@@ -58,8 +68,8 @@ export function AppointmentsPage() {
     try {
       await api.delete(`/appointments/${id}`);
       setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'CANCELED' } : a));
-    } catch (error) {
-      alert('Erro ao cancelar.');
+    } catch {
+      toast.error('Erro ao cancelar agendamento');
     }
   }
 

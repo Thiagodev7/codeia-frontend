@@ -1,10 +1,23 @@
-import { useState, useEffect } from 'react';
+import {
+  BellRing,
+  BrainCircuit,
+  Clock,
+  Edit2, Loader2,
+  Lock // ✅ Novo ícone Lock
+  ,
+
+
+  MapPin,
+  Plus,
+  Save,
+  Scissors,
+  Store,
+  Trash2
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { api } from '../../lib/api';
-import { 
-  Store, Clock, MapPin, Save, Plus, Trash2, Edit2, Loader2,
-  BrainCircuit, Scissors, BellRing, Lock // ✅ Novo ícone Lock
-} from 'lucide-react';
 import type { Service } from '../../types';
 
 const DAYS_CONFIG = [
@@ -24,13 +37,26 @@ interface BusinessHour {
   isOpen: boolean;
 }
 
+// Interface para as configurações do tenant
+interface BusinessSettings {
+  reminderEnabled: boolean;
+  reminderMinutes: number;
+  businessName?: string;
+  contactPhone?: string;
+  address?: string;
+  website?: string;
+  description?: string;
+  logoUrl?: string | null;
+  businessHours?: BusinessHour[];
+}
+
 export function BusinessPage() {
   const [activeTab, setActiveTab] = useState<'info' | 'services'>('info');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   // Estados de Dados
-  const [settings, setSettings] = useState<any>({
+  const [settings, setSettings] = useState<BusinessSettings>({
     reminderEnabled: false,
     reminderMinutes: 60
   });
@@ -67,6 +93,7 @@ export function BusinessPage() {
 
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
+      toast.error('Erro ao carregar informações da empresa');
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +105,7 @@ export function BusinessPage() {
     return ['SECONDARY', 'THIRD', 'UNLIMITED'].includes(plan);
   };
 
-  const updateHour = (dayIndex: number, field: keyof BusinessHour, value: any) => {
+  const updateHour = (dayIndex: number, field: keyof BusinessHour, value: string | boolean) => {
     const newHours = [...hours];
     const targetIndex = newHours.findIndex(h => h.dayOfWeek === dayIndex);
     if (targetIndex >= 0) {
@@ -96,13 +123,15 @@ export function BusinessPage() {
 
       await api.put('/settings/tenant', payload);
       alert('Informações atualizadas com sucesso!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Erro ao salvar:", error);
       // Feedback amigável se o bloqueio vier do backend
-      if (error.response?.data?.message?.includes('Upgrade necessário')) {
-        alert(error.response.data.message);
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      if (axiosError.response?.data?.message?.includes('Upgrade necessário')) {
+        alert(axiosError.response.data.message);
       } else {
         alert('Erro ao salvar. Verifique o servidor.');
+        toast.error('Erro ao salvar configurações');
       }
     } finally {
       setIsSaving(false);
@@ -110,8 +139,8 @@ export function BusinessPage() {
   }
 
   // (Funções de serviço omitidas para brevidade, mantenha as mesmas...)
-  async function handleSaveService(e: React.FormEvent) { /* ... */ }
-  async function handleDeleteService(id: string) { /* ... */ }
+  async function handleSaveService(_e: React.FormEvent) { /* ... */ }
+  async function handleDeleteService(_id: string) { /* ... */ }
 
   if (isLoading) return <MainLayout title="Carregando..."><Loader2 className="animate-spin" /></MainLayout>;
 

@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Send, Bot, Trash2, Loader2, MessageSquare, AlertCircle, ArrowLeft, MoreVertical } from 'lucide-react';
-import { api } from '../../lib/api';
+import { AlertCircle, ArrowLeft, Bot, Loader2, MessageSquare, Send, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { MainLayout } from '../../components/layout/MainLayout';
+import { api } from '../../lib/api';
 import type { Agent } from '../../types/agent';
 
 interface Message {
@@ -44,6 +45,7 @@ export default function ChatPage() {
       setAgents(data);
     } catch (error) {
       console.error('Erro ao buscar agentes', error);
+      toast.error('Erro ao buscar lista de agentes');
     } finally {
       setIsLoadingAgents(false);
     }
@@ -81,13 +83,15 @@ export default function ChatPage() {
 
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        content: "❌ Erro ao comunicar com a IA.",
+        content: "Erro ao processar mensagem.",
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMsg]);
+      toast.error('Falha ao enviar mensagem');
     } finally {
       setIsLoadingResponse(false);
     }

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { Bell, Building, Globe, Loader2, Palette, Save, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
-import { api } from '../../lib/api';
-import { Save, Building, User, Bell, Palette, Globe, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 // CORREÇÃO: Uso de 'import type' para satisfazer o compilador
+import { toast } from 'sonner';
 import type { TenantSettings, UserSettings } from '../../types';
 
 export function SettingsPage() {
@@ -25,7 +26,9 @@ export function SettingsPage() {
     primaryColor: '#06b6d4',
     logoUrl: '',
     timezone: 'America/Sao_Paulo',
-    businessHours: {}
+    businessHours: [], // ✅ Array vazio, não objeto
+    reminderEnabled: false,
+    reminderMinutes: 60
   });
 
   useEffect(() => {
@@ -39,7 +42,8 @@ export function SettingsPage() {
         if (userRes.data) setUserSettings(prev => ({ ...prev, ...userRes.data }));
         if (tenantRes.data) setTenantSettings(prev => ({ ...prev, ...tenantRes.data }));
       } catch (error) {
-        console.error("Erro ao carregar configurações", error);
+        console.error("Erro ao carregar configurações:", error);
+        toast.error('Erro ao carregar configurações');
       } finally {
         setIsLoading(false);
       }
@@ -54,14 +58,14 @@ export function SettingsPage() {
     try {
       if (activeTab === 'personal') {
         await api.put('/settings/me', userSettings);
-        alert('Preferências salvas com sucesso!'); 
+        toast.success('Preferências pessoais salvas com sucesso!'); 
       } else {
         await api.put('/settings/tenant', tenantSettings);
-        alert('Configurações da empresa atualizadas!');
+        toast.success('Configurações da empresa atualizadas com sucesso!');
       }
     } catch (error) {
       console.error(error);
-      alert('Erro ao salvar alterações.');
+      toast.error('Erro ao salvar alterações.');
     } finally {
       setIsSaving(false);
     }
@@ -126,7 +130,7 @@ export function SettingsPage() {
                     <select 
                       className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-cyan-500 outline-none"
                       value={userSettings.theme}
-                      onChange={e => setUserSettings({...userSettings, theme: e.target.value as any})}
+                      onChange={e => setUserSettings({...userSettings, theme: e.target.value as 'light' | 'dark' | 'system'})}
                     >
                       <option value="light">Claro</option>
                       <option value="dark">Escuro</option>

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { X, Save, Loader2 } from 'lucide-react';
+import { Loader2, Save, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { api } from '../../lib/api';
 
 interface Agent {
@@ -43,8 +44,11 @@ export function CreateSessionModal({ isOpen, onClose, onSuccess }: CreateSession
       });
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar sessão.');
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } };
+      const msg = axiosError.response?.data?.message || 'Erro ao criar sessão.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
