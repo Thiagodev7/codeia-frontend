@@ -1,75 +1,30 @@
 import { Bot, Edit2, Loader2, Pause, Play, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
+import { useState } from 'react';
 import type { Agent, CreateAgentDTO } from '../../types/agent';
 import { AgentModal } from './AgentModal';
 // [1] Importar o Layout Principal
-import { toast } from 'sonner';
 import { MainLayout } from '../../components/layout/MainLayout';
+import { useAgents } from '../../hooks/useAgents';
 
 export default function AgentsPage() {
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { agents, isLoading, saveAgent, deleteAgent, toggleAgentStatus } = useAgents();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
 
-  const fetchAgents = async () => {
-    try {
-      setIsLoading(true);
-      const { data } = await api.get<Agent[]>('/agents');
-      setAgents(data);
-    } catch (error) {
-      console.error("Erro ao buscar agentes", error);
-      toast.error('Erro ao buscar lista de agentes');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAgents();
-  }, []);
-
   const handleSave = async (data: CreateAgentDTO) => {
-    try {
-      if (editingAgent) {
-        await api.put(`/agents/${editingAgent.id}`, data);
-      } else {
-        await api.post('/agents', data);
-      }
-      await fetchAgents();
-    } catch (error) {
-      console.error("Erro ao salvar agente", error);
-      // O erro já é tratado no modal, mas garantimos aqui também
-      toast.error('Erro ao salvar agente');
-      throw error; 
-    }
+      const payload = editingAgent ? { ...data, id: editingAgent.id } : data;
+      await saveAgent.mutateAsync(payload);
+      setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja remover este agente?")) return;
-    try {
-      await api.delete(`/agents/${id}`);
-      setAgents(prev => prev.filter(a => a.id !== id));
-    } catch (error) {
-      console.error("Erro ao deletar agente", error);
-      toast.error('Erro ao remover agente');
-    }
+    deleteAgent.mutate(id);
   };
 
   const handleToggleStatus = async (agent: Agent) => {
-    try {
-      setAgents(prev => prev.map(a => 
-        a.id === agent.id ? { ...a, isActive: !a.isActive } : a
-      ));
-      
-      await api.put(`/agents/${agent.id}`, { isActive: !agent.isActive });
-    } catch (error) {
-      console.error("Erro ao alternar status do agente", error);
-      toast.error('Erro ao atualizar status do agente');
-      fetchAgents();
-    }
+    toggleAgentStatus.mutate({ id: agent.id, isActive: !agent.isActive });
   };
 
   return (

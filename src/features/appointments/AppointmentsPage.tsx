@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import {
     Bot,
     CalendarDays,
@@ -9,13 +10,9 @@ import {
     User,
     XCircle
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
-import { api } from '../../lib/api';
-// ✅ API v2.0: Importando tipo paginado
-import clsx from 'clsx';
-import { toast } from 'sonner';
-import type { Appointment, PaginatedResponse } from '../../types';
+import { useAppointments } from '../../hooks/useAppointments'; // Hook
 
 // --- HELPER: Calendário Puro (Sem bibliotecas pesadas) ---
 function getCalendarDays(year: number, month: number) {
@@ -35,10 +32,11 @@ const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Jul
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
 export function AppointmentsPage() {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Estado de paginação (Client-Side por enquanto controla qual página da API buscamos)
+  const [page, setPage] = useState(1);
+  const { appointments, meta, isLoading, cancelAppointment } = useAppointments({ page, limit: 100 });
   
-  // --- Estados de Controle ---
+  // --- Estados de Controle Visual ---
   // Se selectedDate for null, usa o modo "viewMode" (Próximos/Todos)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<'upcoming' | 'all' | 'history'>('upcoming');
@@ -46,30 +44,12 @@ export function AppointmentsPage() {
   // Estado do Calendário Visual (Navegação Meses)
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  async function fetchAppointments() {
-    try {
-      // ✅ API v2.0: Resposta paginada
-      const res = await api.get<PaginatedResponse<Appointment>>('/appointments?limit=100');
-      setAppointments(res.data.data); // ✅ Dados agora vêm em res.data.data
-    } catch (error) {
-      console.error("Erro ao buscar agenda:", error);
-      toast.error('Erro ao carregar agendamentos');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   async function handleCancel(id: string) {
     if (!confirm('Tem certeza que deseja cancelar?')) return;
     try {
-      await api.delete(`/appointments/${id}`);
-      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'CANCELED' } : a));
+      await cancelAppointment(id);
     } catch {
-      toast.error('Erro ao cancelar agendamento');
+      // Erro tratado no hook
     }
   }
 
@@ -314,6 +294,29 @@ export function AppointmentsPage() {
               })
             )}
           </div>
+         
+         {/* Paginação Simples */}
+         {meta && (
+            <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-slate-800">
+              <span className="text-sm text-slate-500">Página {meta.page} de {meta.totalPages}</span>
+              <div className="flex gap-2">
+                <button 
+                  disabled={meta.page === 1}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  className="px-3 py-1 text-sm bg-slate-100 dark:bg-slate-800 rounded hover:opacity-80 disabled:opacity-50"
+                >
+                  Anterior
+                </button>
+                <button 
+                  disabled={meta.page >= meta.totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                  className="px-3 py-1 text-sm bg-slate-100 dark:bg-slate-800 rounded hover:opacity-80 disabled:opacity-50"
+                >
+                  Próxima
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
