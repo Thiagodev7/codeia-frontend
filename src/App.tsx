@@ -10,7 +10,9 @@ import { BusinessPage } from './features/business/BusinessPage';
 import ChatPage from './features/chat/ChatPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { MonitoringPage } from './features/monitor/MonitoringPage';
+import { ServicesPage } from './features/services/ServicesPage'; // ✅ Nova Página
 import { SettingsPage } from './features/settings/SettingsPage';
+
 
 // ✅ IMPORTAÇÃO NOVA (A página que criamos)
 import { AppointmentsPage } from './features/appointments/AppointmentsPage';
@@ -44,6 +46,14 @@ function App() {
                 <BusinessPage />
               </PrivateRoute>
             } />
+
+            {/* ✅ ROTA NOVA DE SERVIÇOS */}
+            <Route path="/services" element={
+              <PrivateRoute>
+                <ServicesPage />
+              </PrivateRoute>
+            } />
+
 
             {/* ✅ ROTA ALINHADA COM O SIDEBAR (/calendar) */}
             <Route path="/calendar" element={

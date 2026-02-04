@@ -1,15 +1,16 @@
 import clsx from 'clsx';
 import {
-  CalendarClock,
-  LayoutGrid,
-  LogOut,
-  MessageCircle,
-  MessageSquareCode,
-  Settings,
-  Share2,
-  Store,
-  User,
-  X
+    CalendarClock,
+    LayoutGrid,
+    LogOut,
+    MessageCircle,
+    MessageSquareCode,
+    Scissors, // ✅ Importado
+    Settings,
+    Share2,
+    Store,
+    User,
+    X
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -25,10 +26,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const navItems = [
     { to: "/", icon: LayoutGrid, label: "Dashboard" },
+    { to: "/calendar", icon: CalendarClock, label: "Agenda" }, // 
+    { to: "/services", icon: Scissors, label: "Serviços" }, // ✅ Nova Tela
     { to: "/channels", icon: Share2, label: "Meus Canais" }, // Nova tela unificada
     { to: "/monitor", icon: MessageCircle, label: "Monitoramento" },
     { to: "/business", icon: Store, label: "Meu Negócio" },
-    { to: "/calendar", icon: CalendarClock, label: "Agenda" },
     // { to: "/agents", icon: Cpu, label: "Agentes IA" }, // Substituído por Channels
     { to: "/chat", icon: MessageSquareCode, label: "Simulador" },
     { to: "/settings", icon: Settings, label: "Configurações" },

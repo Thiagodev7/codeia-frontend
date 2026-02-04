@@ -1,24 +1,17 @@
 import {
-  BellRing,
-  BrainCircuit,
-  Clock,
-  Edit2, Loader2,
-  Lock // ✅ Novo ícone Lock
-  ,
-
-
-  MapPin,
-  Plus,
-  Save,
-  Scissors,
-  Store,
-  Trash2
+    BellRing,
+    BrainCircuit,
+    Clock,
+    Loader2,
+    Lock,
+    MapPin,
+    Save,
+    Store,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { api } from '../../lib/api';
-import type { Service } from '../../types';
 
 const DAYS_CONFIG = [
   { index: 1, label: 'Segunda-feira' },
@@ -51,7 +44,6 @@ interface BusinessSettings {
 }
 
 export function BusinessPage() {
-  const [activeTab, setActiveTab] = useState<'info' | 'services'>('info');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -61,12 +53,9 @@ export function BusinessPage() {
     reminderMinutes: 60
   });
   
-  const [hours, setHours] = useState<BusinessHour[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [currentPlan, setCurrentPlan] = useState('FREE'); // ✅ Estado do Plano
   
-  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
-  const [editingService, setEditingService] = useState<Partial<Service>>({});
+  const [hours, setHours] = useState<BusinessHour[]>([]);
+  const [currentPlan, setCurrentPlan] = useState('FREE'); 
 
   useEffect(() => { fetchData(); }, []);
 
@@ -74,14 +63,12 @@ export function BusinessPage() {
     setIsLoading(true);
     try {
       // ✅ Agora buscamos também os dados do Tenant (/tenant/me) para saber o plano
-      const [settingsRes, servicesRes, tenantRes] = await Promise.all([
+      const [settingsRes, tenantRes] = await Promise.all([
         api.get('/settings/tenant'),
-        api.get('/services').catch(() => ({ data: [] })),
         api.get('/tenant/me').catch(() => ({ data: { plan: 'FREE' } }))
       ]);
 
       setSettings(settingsRes.data);
-      setServices(servicesRes.data || []);
       setCurrentPlan(tenantRes.data.plan || 'FREE'); // ✅ Guarda o plano
 
       const dbHours: BusinessHour[] = settingsRes.data.businessHours || [];
@@ -138,9 +125,7 @@ export function BusinessPage() {
     }
   }
 
-  // (Funções de serviço omitidas para brevidade, mantenha as mesmas...)
-  async function handleSaveService(_e: React.FormEvent) { /* ... */ }
-  async function handleDeleteService(_id: string) { /* ... */ }
+
 
   if (isLoading) return <MainLayout title="Carregando..."><Loader2 className="animate-spin" /></MainLayout>;
 
@@ -164,16 +149,15 @@ export function BusinessPage() {
         </div>
 
         {/* Abas */}
+        {/* Abas - REMOVIDAS, AGORA É SÓ UMA VISÃO */}
         <div className="flex border-b border-slate-200 dark:border-slate-800 mb-8">
-          <button onClick={() => setActiveTab('info')} className={`px-6 py-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-all ${activeTab === 'info' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-            <Store className="w-4 h-4" /> Dados & Horários
-          </button>
-          <button onClick={() => setActiveTab('services')} className={`px-6 py-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-all ${activeTab === 'services' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-            <Scissors className="w-4 h-4" /> Catálogo de Serviços
-          </button>
+            <h2 className="px-6 py-3 text-sm font-medium flex items-center gap-2 border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400">
+                <Store className="w-4 h-4" /> Dados & Horários
+            </h2>
         </div>
 
-        {activeTab === 'info' && (
+
+
           <form onSubmit={handleSaveSettings} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
               
@@ -324,61 +308,7 @@ export function BusinessPage() {
               </div>
             </div>
           </form>
-        )}
 
-        {/* Serviços e Modais omitidos para brevidade (mantêm-se os mesmos do arquivo anterior) */}
-        {/* Lembre-se de incluir o bloco activeTab === 'services' e o Modal de Serviços aqui no final igual ao anterior */}
-        {activeTab === 'services' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Catálogo de Serviços</h3>
-              <button onClick={() => { setEditingService({}); setIsServiceModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium shadow-md transition-colors">
-                <Plus className="w-4 h-4" /> Novo Serviço
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {services.map(service => (
-                <div key={service.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:shadow-xl transition-all group relative">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="font-bold text-slate-800 dark:text-white text-lg">{service.name}</h4>
-                    <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 text-xs px-2.5 py-1 rounded-full font-bold">R$ {Number(service.price).toFixed(2)}</span>
-                  </div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 line-clamp-2 h-10">{service.description || 'Sem descrição.'}</p>
-                  <div className="flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-100 dark:border-slate-800 pt-4">
-                    <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {service.duration} min</span>
-                  </div>
-                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => { setEditingService(service); setIsServiceModalOpen(true); }} className="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDeleteService(service.id)} className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg"><Trash2 className="w-4 h-4" /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {isServiceModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg p-8 shadow-2xl">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white">{editingService?.id ? 'Editar' : 'Novo'} Serviço</h3>
-                <button onClick={() => setIsServiceModalOpen(false)} className="text-slate-400">✕</button>
-              </div>
-              <form onSubmit={handleSaveService} className="space-y-5">
-                <input className="input-field w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" required placeholder="Nome" value={editingService?.name || ''} onChange={e => setEditingService(prev => ({...prev, name: e.target.value}))} />
-                <div className="grid grid-cols-2 gap-5">
-                  <input type="number" step="0.01" required className="input-field w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" placeholder="Preço" value={editingService?.price === undefined ? '' : editingService.price} onChange={e => setEditingService(prev => ({...prev, price: Number(e.target.value)}))} />
-                  <input type="number" required className="input-field w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" placeholder="Duração (min)" value={editingService?.duration || ''} onChange={e => setEditingService(prev => ({...prev, duration: Number(e.target.value)}))} />
-                </div>
-                <textarea className="input-field w-full h-24 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 resize-none" placeholder="Descrição" value={editingService?.description || ''} onChange={e => setEditingService(prev => ({...prev, description: e.target.value}))} />
-                <div className="flex justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setIsServiceModalOpen(false)} className="px-5 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">Cancelar</button>
-                  <button type="submit" className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Salvar</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
     </MainLayout>
   );

@@ -28,6 +28,7 @@ export interface Service {
   id: string;
   name: string;
   description?: string;
+  aiDescription?: string; // ✅ Instruções para IA
   price: number;
   duration: number; // em minutos
   isActive: boolean;

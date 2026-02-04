@@ -51,7 +51,7 @@ export function Logo({ className, size = 'md' }: LogoProps) {
 
       {/* Text Logo */}
       <div className={clsx("font-bold tracking-tight flex items-baseline", textSizes[size])}>
-        <span className="text-white dark:text-white">Code</span>
+        <span className="text-black dark:text-white">Code</span>
         <span 
           className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 ml-[1px]"
           style={{ 
