@@ -41,6 +41,7 @@ interface BusinessSettings {
   description?: string;
   logoUrl?: string | null;
   businessHours?: BusinessHour[];
+  aiKnowledge?: string; // New field
 }
 
 export function BusinessPage() {
@@ -253,9 +254,18 @@ export function BusinessPage() {
               {/* Card Instruções (Mantido) */}
               <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2 text-lg">
-                  <BrainCircuit className="w-5 h-5 text-purple-500" /> Instruções Específicas
+                  <BrainCircuit className="w-5 h-5 text-purple-500" /> Conhecimento da IA (Instruções do Negócio)
                 </h3>
-                <textarea className="w-full h-32 px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 resize-none" value={settings.description || ''} onChange={e => setSettings({...settings, description: e.target.value})} placeholder="Regras de negócio, formas de pagamento..." />
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                    Escreva aqui tudo o que a IA precisa saber sobre seu negócio: nome do profissional, regras específicas, política de cancelamento, diferenciais... 
+                    <br/><span className="text-xs text-purple-500 font-bold">* Isso é confidencial e usado apenas para contextualizar a IA.</span>
+                  </p>
+                <textarea 
+                    className="w-full h-48 px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                    value={settings.aiKnowledge || ''} 
+                    onChange={e => setSettings({...settings, aiKnowledge: e.target.value})} 
+                    placeholder="Ex: O Thiago tem 10 anos de experiência. Aceitamos PIX e Cartão. Tolerância de atraso é 10 min. Para agendar, precisa de sinal de 50%..." 
+                />
               </div>
             </div>
             
