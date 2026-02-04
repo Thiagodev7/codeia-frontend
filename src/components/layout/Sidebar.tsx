@@ -1,18 +1,19 @@
 import clsx from 'clsx';
 import {
-    CalendarClock,
-    LayoutGrid,
-    LogOut,
-    MessageCircle,
-    MessageSquareCode,
-    Settings,
-    Share2,
-    Store,
-    User,
-    X
+  CalendarClock,
+  LayoutGrid,
+  LogOut,
+  MessageCircle,
+  MessageSquareCode,
+  Settings,
+  Share2,
+  Store,
+  User,
+  X
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Logo } from '../ui/Logo';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -58,18 +59,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Header / Logo */}
           <div className="p-6 pb-2 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-cyan-500 blur opacity-40 rounded-lg"></div>
-                <div className="relative w-9 h-9 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-inner border border-white/20">
-                  <span className="font-bold text-lg">C</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  CodeIA
-                </h1>
-                <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase ml-0.5">Workspace</p>
-              </div>
+               <Logo size="md" />
             </div>
             
             <button onClick={onClose} className="md:hidden p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">

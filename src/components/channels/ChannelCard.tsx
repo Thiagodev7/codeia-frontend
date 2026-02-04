@@ -30,7 +30,6 @@ export function ChannelCard({
   };
 
   const status = statusMap[session.status] || statusMap.DISCONNECTED;
-  const StatusIcon = status.icon;
 
   return (
     <div className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-xl hover:border-cyan-500/30 dark:hover:border-cyan-500/30">

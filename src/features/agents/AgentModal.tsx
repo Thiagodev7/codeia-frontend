@@ -1,7 +1,7 @@
 import { Bot, Loader2, Save, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-// CORREÇÃO: Usando 'import type' aqui também
 import { toast } from 'sonner';
+import { AGENT_TEMPLATES, type AgentTemplate } from '../../data/agentTemplates';
 import type { Agent, CreateAgentDTO } from '../../types/agent';
 
 interface AgentModalProps {
@@ -19,6 +19,7 @@ export function AgentModal({ isOpen, onClose, onSave, initialData }: AgentModalP
     model: 'gemini-2.0-flash-lite'
   });
   
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -31,12 +32,35 @@ export function AgentModal({ isOpen, onClose, onSave, initialData }: AgentModalP
           instructions: initialData.instructions,
           model: initialData.model
         });
+        setSelectedTemplate(null);
       } else {
+        // Reset full form
         setFormData({ name: '', slug: '', instructions: '', model: 'gemini-2.0-flash-lite' });
+        setSelectedTemplate('custom');
       }
       setError('');
     }
   }, [isOpen, initialData]);
+
+  const handleTemplateSelect = (template: AgentTemplate) => {
+    setSelectedTemplate(template.id);
+    if (template.id !== 'custom') {
+      const generatedSlug = template.name.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      setFormData(prev => ({
+        ...prev,
+        name: template.name,
+        slug: generatedSlug, // Auto-fill slug too for convenience
+        instructions: template.instructions
+      }));
+    } else {
+       // Keep existing if switching to custom, or clear? Let's keep existing to not lose work
+    }
+  };
 
   const handleNameChange = (val: string) => {
     if (!initialData) {
@@ -86,6 +110,48 @@ export function AgentModal({ isOpen, onClose, onSave, initialData }: AgentModalP
         </div>
 
         <div className="p-6 overflow-y-auto custom-scrollbar">
+          
+          {/* Template Selection - Only show for new agents */}
+          {!initialData && (
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-3">
+                Escolha um modelo ou comece do zero:
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {AGENT_TEMPLATES.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => handleTemplateSelect(template)}
+                    className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all ${
+                      selectedTemplate === template.id
+                        ? 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-500 ring-1 ring-cyan-500'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-cyan-300 dark:hover:border-cyan-700'
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg ${
+                      selectedTemplate === template.id 
+                        ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400' 
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                    }`}>
+                      <template.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className={`text-sm font-semibold ${
+                        selectedTemplate === template.id ? 'text-cyan-900 dark:text-cyan-100' : 'text-slate-700 dark:text-slate-300'
+                      }`}>
+                        {template.name}
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                        {template.description}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <form id="agent-form" onSubmit={handleSubmit} className="space-y-5">
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
